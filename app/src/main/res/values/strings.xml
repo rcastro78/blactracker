@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">BlacTracker</string>
+    <!--
+    <string name="BASE_URL_CONTROL">http://23.21.192.188:8080/BlacWSMobileTrack/blacsolws/mobileTrack/</string>
+    -->
+    <string name="title_activity_login">Inicia Sesión</string>
+    <string name="BASE_URL_CONTROL">http://n2.ws.blacsol.com/mobile/track/v2/mobileTrack/</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+
+
+    <string name="openDrawer">Abrir</string>
+    <string name="closeDrawer">Cerrar</string>
+</resources>

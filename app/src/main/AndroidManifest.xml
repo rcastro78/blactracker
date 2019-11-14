@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="mx.com.blac.mobile.tracker">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.BATTERY_STATS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.Manifest.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <application
+        android:name="mx.com.blac.mobile.tracker.AppController"
+        android:allowBackup="true"
+        android:icon="@drawable/logo"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name="mx.com.blac.mobile.tracker.LoginActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="AA_DB_NAME"
+            android:value="blac.db" />
+        <meta-data
+            android:name="AA_DB_VERSION"
+            android:value="1" />
+        <meta-data
+            android:name="AA_MODELS"
+            android:value="mx.com.blac.mobile.track.modelosDB.Monitoreo,mx.com.blac.mobile.track.modelosDB.ComandoRecibido" />
+
+        <activity
+            android:name="mx.com.blac.mobile.tracker.MonitoreoActivity"
+            android:label="Monitoreo"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="mx.com.blac.mobile.tracker.ConfigActivity"
+            android:label="Configuración"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="mx.com.blac.mobile.tracker.HomeActivity"
+            android:label="Home"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
+
+        <service
+            android:name="mx.com.blac.mobile.tracker.servicios.MonitoreoService"
+            android:enabled="true"
+            android:launchMode="singleTop" />
+        <service
+            android:name="mx.com.blac.mobile.tracker.servicios.ComandoService"
+            android:enabled="true"
+            android:launchMode="singleTop" />
+        <service
+            android:name="mx.com.blac.mobile.tracker.servicios.SincronizacionService"
+            android:enabled="true"
+            android:launchMode="singleTop" />
+
+        <receiver android:name="mx.com.blac.mobile.tracker.receivers.AlarmaReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="mx.com.blac.mobile.tracker.receivers.ComandoReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="mx.com.blac.mobile.tracker.receivers.ApagadoReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="mx.com.blac.mobile.tracker.receivers.PantallaBloqueadaReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name="mx.com.blac.mobile.tracker.EnvioComandosActivity"
+            android:label="Envío de eventos" />
+
+        <!-- SE AGREGA PARA ANDROID 8.x -->
+        <provider
+            android:name="mx.com.blac.mobile.tracker.DBContentProvider"
+            android:authorities="mx.com.blac.mobile.tracker"
+            android:enabled="true"
+            android:exported="false" />
+
+        <activity
+            android:name="mx.com.blac.mobile.tracker.ComandoRecibidoActivity"
+            android:label="Comandos Recibidos" />
+        <activity android:name="mx.com.blac.mobile.tracker.StreamActivity"></activity>
+    </application>
+
+</manifest>
