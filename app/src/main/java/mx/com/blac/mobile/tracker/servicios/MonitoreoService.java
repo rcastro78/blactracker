@@ -3,6 +3,7 @@ package mx.com.blac.mobile.tracker.servicios;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -29,6 +30,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
@@ -119,6 +121,11 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
     int batLevel=0;
     String evento;
     AlarmaReceiver alarma = new AlarmaReceiver();
+
+
+
+
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //Generar un token para comenzar el envio de la data
@@ -349,9 +356,26 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
         }, 0, precision * 1000);
 
 
-        int NOTIFICATION_ID = (int) (System.currentTimeMillis()%10000);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForeground(NOTIFICATION_ID, new Notification.Builder(this).build());
+        int NOTIFICATION_ID = 1;
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            //startForeground(NOTIFICATION_ID, new Notification.Builder(this).build());
+            String NOTIFICATION_CHANNEL_ID = "mx.com.blac.mobile.tracker";
+            String channelName = "Mi Canal";
+            NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            assert manager != null;
+            manager.createNotificationChannel(chan);
+
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+            Notification notification = notificationBuilder.setOngoing(true)
+                    .setSmallIcon(R.drawable.notif_icon)
+                    .setContentTitle("App is running in background")
+                    .setPriority(NotificationManager.IMPORTANCE_MIN)
+                    .setCategory(Notification.CATEGORY_SERVICE)
+                    .build();
+            startForeground(2, notification);
+
+
         }
 
         mostrarNotificacion(NOTIF_RASTREO,context,"Su posición está siendo monitoreada");
