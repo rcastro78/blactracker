@@ -31,6 +31,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
@@ -92,10 +93,10 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
     private Timer timer = new Timer();
     double lat,lng,latAnt,lngAnt;
     int _velocidad,_altitud;
-    String BASE_URL,METODO="insertEvent",METODO_TOKEN="authenticate";
+    String BASE_URL,METODO="set/encode/Event",METODO_TOKEN="authenticate";
     SensorManager sensorManager;
     private static final String BATT_ACTION="android.intent.action.BATTERY_CHANGED";
-    private static String[] PERMISSIONS_LOCATION = {
+    private String[] PERMISSIONS_LOCATION = {
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION
     };
@@ -109,7 +110,7 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
     private static String TAG="MonitoreoService";
     Tracker tracker;
     Location  net_loc;
-    int precision=0;
+    int precision=5;
     int NOTIF_RASTREO=998;
     double v2;
     @Nullable
@@ -122,7 +123,13 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
     String evento;
     AlarmaReceiver alarma = new AlarmaReceiver();
 
+/*
 
+curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjpudWxsLCJjdHkiOiJKV1QifQ..7VUMbjM0uHXgh7R70aja_w.gYWQHRuzqdKRE3Vx6Raly0g3m7vO2ktX3icd2NqTkuec_yXjr4p1NUZh4BAa2A8tGRS8wfr-bsPP1LJ_DTe8BlwRrnvSuXfrqdmzfuoWiV2l-LK6Mv1UsqN09y5JxcR2oad1lIbZpnk4Ca4PhFDXP33fSfCdip905_itK0zcja_ZCrbXnrdq_yec7v6KQa2YIFsZrqWSZ-HnhMc_KR4_md2KYUEriEeRIqnjPNcwwKGKKZ31atJxUaB4ivOM3mvuO88dfbWchw4p6NUf1NnPDQxuj6-iAaBTENtc4j9nKN0NZeEFpzJkyto3QKy2HS87kJXdV8Ss7Fr96W5wwEVmkTfkA2NOPH6aTiQuMt1Pi7k.DkfjJ6L7PoHmqbQXnpo2YA" -v -X POST -d 'ewoidXNlcm5hbWUiOiAiQkxBQyIsCiJpbWVpIjogIjM1MzQyMDA4NTMxMzgyNiIsCiJldmVudG8iOiAiMSIsCiJsYXRpdHVkIjogIi05OS4wNDI0NDkiLAoibG9uZ2l0dWQiOiAiMTkuNTU5Nzg4IiwKImFsdGl0dWQiOiAiTyIsCiJ2ZWxvY2lkYWQiOiAiMC4wIiwKImRpcmVjY2lvbiI6ICIwIiwKImZlY2hhSG9yYVVUQyI6ICIyMDE3MDQxMzIyMDAwNSIKfQo' http://n2.ws.blacsol.com/mobile/track/v2/mobileTrack/set/encode/Event
+
+* eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjpudWxsLCJjdHkiOiJKV1QifQ..7VUMbjM0uHXgh7R70aja_w.gYWQHRuzqdKRE3Vx6Raly0g3m7vO2ktX3icd2NqTkuec_yXjr4p1NUZh4BAa2A8tGRS8wfr-bsPP1LJ_DTe8BlwRrnvSuXfrqdmzfuoWiV2l-LK6Mv1UsqN09y5JxcR2oad1lIbZpnk4Ca4PhFDXP33fSfCdip905_itK0zcja_ZCrbXnrdq_yec7v6KQa2YIFsZrqWSZ-HnhMc_KR4_md2KYUEriEeRIqnjPNcwwKGKKZ31atJxUaB4ivOM3mvuO88dfbWchw4p6NUf1NnPDQxuj6-iAaBTENtc4j9nKN0NZeEFpzJkyto3QKy2HS87kJXdV8Ss7Fr96W5wwEVmkTfkA2NOPH6aTiQuMt1Pi7k.DkfjJ6L7PoHmqbQXnpo2YA
+*
+* */
 
 
 
@@ -192,7 +199,12 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
         super.onStart(intent, startId);
         Log.d(TAG,"Proceso iniciado...");
         imei=sharedpreferences.getString("imei","");
-        new MonitoreoAsyncTask(sharedpreferences.getString("token",""),String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),ENCENDIDO).execute();
+
+        Tracker t = new Tracker(MonitoreoService.this);
+        lat = t.getLatitude();
+        lng = t.getLongitude();
+        //if(lat!=0 && lng!=0)
+            new MonitoreoAsyncTask(sharedpreferences.getString("token",""),String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),ENCENDIDO).execute();
     }
 
     @Override
@@ -249,7 +261,11 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
 
 
         final String token = sharedpreferences.getString("token","");
-        new MonitoreoAsyncTask(token,String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),evento).execute();
+        Tracker t = new Tracker(MonitoreoService.this);
+        lat = t.getLatitude();
+        lng = t.getLongitude();
+        //if(lat!=0 && lng!=0)
+            new MonitoreoAsyncTask(token,String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),evento).execute();
 
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -262,17 +278,11 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
 
 
 
-        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    (Activity)context,
-                    PERMISSIONS_LOCATION,
-                    1 );
-
+        if (ContextCompat.checkSelfPermission( this,android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED )
+        {
+          return;
         }
-
 
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, precision*1000, 0, listener);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, precision*1000, 0, listener);
@@ -300,6 +310,11 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
 
 
                 if (hayInternet() ) {
+                    Log.d(TAG,"Hay internet");
+                    Tracker t = new Tracker(MonitoreoService.this);
+                    lat = t.getLatitude();
+                    lng = t.getLongitude();
+
                     if (lat!=0 && lng!=0) {
 
                         if (sharedpreferences.getBoolean("primeraCorrida",true)) {
@@ -322,7 +337,7 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
                     }
 
                 }else{
-
+                    Log.d(TAG,"No hay internet");
 
                     DateFormat df2= new SimpleDateFormat("yyyyMMddHHmmss");
                     TimeZone timeZone = TimeZone.getTimeZone("UTC");
@@ -333,10 +348,12 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
 
                     String fecha =df2.format(calendar.getTime());
 
-
+                    Tracker t = new Tracker(MonitoreoService.this);
+                    lat = t.getLatitude();
+                    lng = t.getLongitude();
 
                     if (lat!=0 && lng!=0) {
-                        Log.d("PROCESO", "Guardando data...");
+                        Log.d(TAG, "Guardando data...");
                         Monitoreo monitoreo = new Monitoreo();
                         monitoreo.username = "BLAC";
                         monitoreo.imei = sharedpreferences.getString("imei", "");
@@ -347,8 +364,8 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
                         monitoreo.altitud = _altitud;
                         monitoreo.rumbo = grados;
                         monitoreo.fechaUTC = fecha;
-                        Log.d("PROCESO", "Guardando data..." + String.valueOf(lat));
-                        Log.d("PROCESO", "Guardando data..." + String.valueOf(monitoreo.save()));
+                        Log.d(TAG, "Guardando data..." + String.valueOf(lat));
+                        Log.d(TAG, "Guardando data..." + String.valueOf(monitoreo.save()));
                     }
 
                 }
@@ -453,7 +470,7 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
 
             int timetofix = locationManager.getGpsStatus(null).getTimeToFirstFix();
             Log.i(TAG, "Time to first fix = " + timetofix);
-            for (GpsSatellite sat : locationManager.getGpsStatus(null).getSatellites()) {
+            /*for (GpsSatellite sat : locationManager.getGpsStatus(null).getSatellites()) {
                 if (sat.usedInFix()) {
                     satellitesInFix++;
                 }
@@ -461,7 +478,23 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
             }
 
         totalSatelites = satellitesInFix;
-        Log.d(TAG,String.valueOf(totalSatelites));
+        Log.d(TAG,String.valueOf(totalSatelites));*/
+
+        Tracker t = new Tracker(MonitoreoService.this);
+        lat = t.getLatitude();
+        lng = t.getLongitude();
+        Log.i(TAG, "Coordenadas: "+lat+","+lng);
+
+        //if(lat!=0 && lng!=0)
+        try{
+            Log.d(TAG,"Servicio");
+            new MonitoreoAsyncTask(sharedpreferences.getString("token",""),String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),ENCENDIDO).execute();
+        }catch (Exception ex){
+            Log.d(TAG,ex.getMessage());
+        }
+
+
+
 
     }
 
@@ -471,12 +504,12 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
     {
 
 
-        private String token;
+        private String _token;
         private String _lat,_lng,_altitud,_rumbo;
         String _evento;
 
-        public MonitoreoAsyncTask(String token, String _lat, String _lng, String _altitud, String _rumbo, String _evento) {
-            this.token = token;
+        public MonitoreoAsyncTask(String _token, String _lat, String _lng, String _altitud, String _rumbo, String _evento) {
+            this._token = _token;
             this._lat = _lat;
             this._lng = _lng;
             this._altitud = _altitud;
@@ -484,8 +517,6 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
             this._evento = _evento;
         }
 
-        public MonitoreoAsyncTask() {
-        }
 
 
 
@@ -522,7 +553,7 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
 
 
 
-            if (totalSatelites>0) {
+
                 try {
                     Log.d(TAG,sharedpreferences.getString("evento","0"));
 
@@ -580,7 +611,7 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
                     //SharedPreferences.Editor editor = sharedpreferences.edit();
                     //editor.putString("fechaActual",fechaActual);
                     if (_lat!="0" && _lng!="0") {
-                        Log.d("MonitoreoService", params);
+                        Log.d(TAG, params);
                         //-H en curl
                         httppost.setHeader("token", sharedpreferences.getString("token",""));
                         httppost.setHeader("Content-Type", "application/json");
@@ -602,11 +633,11 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
                     }
 
                 } catch (Exception ex) {
-                   Log.d(TAG,ex.getMessage());
+                   Log.e(TAG,ex.getMessage());
 
                 }
 
-            }
+
 
             if (network_enabled && !gps_enabled)
             {
@@ -623,6 +654,12 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
             return llamar();
         }
 
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Log.d(TAG,"Arrancando tarea asíncrona");
+        }
 
         @Override
         protected void onPostExecute(Integer integer) {
