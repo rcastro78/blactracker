@@ -42,7 +42,12 @@ public class Tracker extends Service implements LocationListener {
 
     public Tracker(Context context) {
         this.mContext = context;
+   }
 
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
         getLocation();
     }
 

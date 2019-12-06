@@ -398,6 +398,8 @@ curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBM
         mostrarNotificacion(NOTIF_RASTREO,context,"Su posición está siendo monitoreada");
     }
 
+
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         float degree = Math.round(event.values[0]);

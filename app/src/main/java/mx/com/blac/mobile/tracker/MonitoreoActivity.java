@@ -1,6 +1,7 @@
 package mx.com.blac.mobile.tracker;
 
 import android.Manifest;
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,6 +12,7 @@ import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -116,7 +118,15 @@ public class MonitoreoActivity extends AppCompatActivity{
                     stopService(new Intent(MonitoreoActivity.this, MonitoreoService.class));
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService(new Intent(MonitoreoActivity.this, MonitoreoService.class));
+                         startForegroundService(new Intent(MonitoreoActivity.this, MonitoreoService.class));//Do something after 100ms
+                        Notification.Builder builder = new Notification.Builder(this, "blac_panico")
+                                .setContentTitle(getString(R.string.app_name))
+                                .setContentText("Enviando pánico")
+                                .setAutoCancel(true);
+
+                        Notification notification = builder.build();
+                        tracker.startForeground(1,notification);
+
                     }else{
                         startService(new Intent(MonitoreoActivity.this, MonitoreoService.class));
                     }

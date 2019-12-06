@@ -18,6 +18,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -236,7 +237,8 @@ public static String TAG="LoginActivity";
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e(TAG, error.getMessage());
                 VolleyLog.e(TAG, error.getLocalizedMessage());
-
+                VolleyLog.e(TAG, error.toString());
+                Toast.makeText(getApplicationContext(),"No se pudo autenticar. Contacte al proveedor de la app",Toast.LENGTH_LONG).show();
             }
 
 
