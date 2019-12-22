@@ -35,6 +35,8 @@ import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -100,9 +102,7 @@ public class MonitoreoService extends Service implements SensorEventListener,Gps
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION
     };
-    int idChofer=-1;
     int grados;
-    String viajeActivo="";
     int totalSatelites=0;
     LocationManager locationManager;
     SharedPreferences sharedpreferences;
@@ -203,7 +203,8 @@ curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBM
         Tracker t = new Tracker(MonitoreoService.this);
         lat = t.getLatitude();
         lng = t.getLongitude();
-        //if(lat!=0 && lng!=0)
+        if(lat!=0 && lng!=0)
+
             new MonitoreoAsyncTask(sharedpreferences.getString("token",""),String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),ENCENDIDO).execute();
     }
 
@@ -212,7 +213,11 @@ curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBM
     {
         timer.cancel();
         Log.d(TAG,"Proceso detenido...");
-        new MonitoreoAsyncTask(sharedpreferences.getString("token",""),String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),APAGADO).execute();
+
+        lat = Double.parseDouble(sharedpreferences.getString("lat","0"));
+        lng = Double.parseDouble(sharedpreferences.getString("lng","0"));
+        if(lat!=0 && lng!=0)
+            new MonitoreoAsyncTask(sharedpreferences.getString("token",""),String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),APAGADO).execute();
         super.onDestroy();
         alarma.cancelAlarm(this);
         unregisterReceiver(bateriaReceiver);
@@ -242,12 +247,10 @@ curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBM
         this.registerReceiver(this.bateriaReceiver, theFilter);
 
 
-
-        /*
         tracker = new Tracker(context);
         lat = tracker.getLatitude();
         lng = tracker.getLongitude();
-*/
+
 
         sharedpreferences = this.getSharedPreferences(PREFS_NAME, 0);
         if (sharedpreferences != null) {
@@ -264,7 +267,7 @@ curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBM
         Tracker t = new Tracker(MonitoreoService.this);
         lat = t.getLatitude();
         lng = t.getLongitude();
-        //if(lat!=0 && lng!=0)
+        if(lat!=0 && lng!=0)
             new MonitoreoAsyncTask(token,String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),evento).execute();
 
 
@@ -311,12 +314,10 @@ curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBM
 
                 if (hayInternet() ) {
                     Log.d(TAG,"Hay internet");
-                    Tracker t = new Tracker(MonitoreoService.this);
-                    lat = t.getLatitude();
-                    lng = t.getLongitude();
+
 
                     if (lat!=0 && lng!=0) {
-
+                        //Toast.makeText(getApplicationContext(),"Coord: "+lat+","+lng,Toast.LENGTH_LONG).show();
                         if (sharedpreferences.getBoolean("primeraCorrida",true)) {
                             sharedpreferences.edit().putBoolean("primeraCorrida",false).commit();
                             evento = INSTALL;
@@ -472,7 +473,7 @@ curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBM
 
             int timetofix = locationManager.getGpsStatus(null).getTimeToFirstFix();
             Log.i(TAG, "Time to first fix = " + timetofix);
-            /*for (GpsSatellite sat : locationManager.getGpsStatus(null).getSatellites()) {
+            for (GpsSatellite sat : locationManager.getGpsStatus(null).getSatellites()) {
                 if (sat.usedInFix()) {
                     satellitesInFix++;
                 }
@@ -480,20 +481,22 @@ curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBM
             }
 
         totalSatelites = satellitesInFix;
-        Log.d(TAG,String.valueOf(totalSatelites));*/
+        Log.d(TAG,String.valueOf(totalSatelites));
 
         Tracker t = new Tracker(MonitoreoService.this);
         lat = t.getLatitude();
         lng = t.getLongitude();
-        Log.i(TAG, "Coordenadas: "+lat+","+lng);
 
-        //if(lat!=0 && lng!=0)
+if(totalSatelites>0){
+    if(lat!=0 && lng!=0)
         try{
             Log.d(TAG,"Servicio");
             new MonitoreoAsyncTask(sharedpreferences.getString("token",""),String.valueOf(lat),String.valueOf(lng),String.valueOf(_altitud),String.valueOf(grados),ENCENDIDO).execute();
         }catch (Exception ex){
             Log.d(TAG,ex.getMessage());
         }
+}
+
 
 
 
@@ -711,13 +714,17 @@ curl -H "Content-Type: application/json" -H "token:eyJhbGciOiJkaXIiLCJlbmMiOiJBM
 
             float distanceInMeters = loc1.distanceTo(loc2);
 
+            Log.i(TAG, "Coordenadas (Changed): "+lat+","+lng);
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            editor.putString("lat",String.valueOf(lat));
+            editor.putString("lng",String.valueOf(lng));
+            editor.apply();
             //velocidad = (int)(3.6*(distanceInMeters/precision));
 
             float v = Math.round(3.6*speed);
             //float v1 = Math.round(3.6*(distanceInMeters/precision));
-            SharedPreferences.Editor editor = sharedpreferences.edit();
             editor.putString("velocidad",String.valueOf((int)v));
-            editor.commit();
+
 
             _velocidad = (int)v;
 
